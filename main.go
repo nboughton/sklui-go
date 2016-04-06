@@ -61,9 +61,17 @@ func layout(g *gocui.Gui) error {
 }
 
 func keybindings(g *gocui.Gui) error {
+	// Set quit
 	if err := g.SetKeybinding("input", gocui.KeyCtrlQ, gocui.ModNone, quit); err != nil {
 		return err
 	}
+	if err := g.SetKeybinding("input", gocui.KeyEnter, gocui.ModNone, submitLine); err != nil {
+		return err
+	}
+	return nil
+}
+
+func submitLine(g *gocui.Gui, v *gocui.View) error {
 	return nil
 }
 
