@@ -149,6 +149,7 @@ func scrollHistory(g *gocui.Gui, v *gocui.View, dy int) error {
 		if i := cmdIdx + dy; i >= 0 && i < len(cmdBuffer) {
 			cmdIdx = i
 			fmt.Fprintf(v, "%v", cmdBuffer[cmdIdx])
+			v.SetOrigin(0, 0)
 		}
 	}
 	return nil
