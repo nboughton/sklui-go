@@ -142,12 +142,13 @@ func inputLine(g *gocui.Gui, v *gocui.View) error {
 }
 
 func scrollHistory(g *gocui.Gui, v *gocui.View, dy int) error {
-	if v != nil { // Origin is broken for this as it won't go into negatives
+	if v != nil {
 		v.Clear()
 		if i := cmdIdx + dy; i >= 0 && i < len(cmdBuffer) {
 			cmdIdx = i
 			fmt.Fprintf(v, "%v", cmdBuffer[cmdIdx])
 			v.SetOrigin(0, 0)
+			//v.SetCursor(0, -1)
 		}
 	}
 	return nil
