@@ -8,7 +8,8 @@ import (
 	"github.com/jroimartin/gocui"
 )
 
-var inputBufferLine = -1
+var cmdBuffer = []string{}
+var cmdIdx = 0
 
 func main() {
 	// Initialise gui
@@ -57,7 +58,7 @@ func layout(g *gocui.Gui) error {
 		}
 
 		// View settings
-		//v.Autoscroll = true
+		v.Autoscroll = true
 		v.Editable = true
 		v.Wrap = true
 
@@ -104,6 +105,11 @@ func inputLine(g *gocui.Gui, v *gocui.View) error {
 		line = ""
 	}
 
+	if line != "" {
+		cmdBuffer = append(cmdBuffer, line)
+		cmdIdx = len(cmdBuffer)
+	}
+
 	ov, err := g.View("main")
 	if err != nil {
 		log.Panicln(err)
@@ -125,22 +131,26 @@ func inputLine(g *gocui.Gui, v *gocui.View) error {
 			ov.Clear()
 		case "/printInputBuffer":
 			fmt.Fprintln(ov, "INPUT BUFFER:")
-			fmt.Fprintln(ov, v.Buffer())
+			fmt.Fprintln(ov, cmdBuffer)
 		case "/clearInputBuffer":
 			v.Clear()
 		}
 	} else {
 		// print to output and send it to the mud
-		fmt.Fprintln(ov, "input:", line, inputBufferLine)
+		fmt.Fprintln(ov, "cmd:", line)
 	}
 
+	v.Clear()
 	return nil
 }
 
 func scrollHistory(v *gocui.View, dy int) error {
 	if v != nil { // Origin is broken for this as it won't go into negatives
-		ox, oy := v.Origin()
-		v.SetOrigin(ox, oy+dy)
+		v.Clear()
+		if i := cmdIdx + dy; i >= 0 && i < len(cmdBuffer) {
+			cmdIdx = i
+			fmt.Fprintln(v, cmdBuffer[cmdIdx])
+		}
 	}
 	return nil
 }
