@@ -58,7 +58,7 @@ func layout(g *gocui.Gui) error {
 		}
 
 		// View settings
-		v.Autoscroll = true
+		//v.Autoscroll = true
 		v.Editable = true
 		v.Wrap = true
 
@@ -83,7 +83,7 @@ func keybindings(g *gocui.Gui) error {
 	// Mouse cursor up needs to select the correct line from input
 	if err := g.SetKeybinding("input", gocui.KeyArrowUp, gocui.ModNone,
 		func(g *gocui.Gui, v *gocui.View) error {
-			scrollHistory(v, -1)
+			scrollHistory(g, v, -1)
 			return nil
 		}); err != nil {
 		return err
@@ -91,7 +91,7 @@ func keybindings(g *gocui.Gui) error {
 	// Mouse cursor down needs to select the correct line from input
 	if err := g.SetKeybinding("input", gocui.KeyArrowDown, gocui.ModNone,
 		func(g *gocui.Gui, v *gocui.View) error {
-			scrollHistory(v, 1)
+			scrollHistory(g, v, 1)
 			return nil
 		}); err != nil {
 		return err
@@ -110,10 +110,7 @@ func inputLine(g *gocui.Gui, v *gocui.View) error {
 		cmdIdx = len(cmdBuffer)
 	}
 
-	ov, err := g.View("main")
-	if err != nil {
-		log.Panicln(err)
-	}
+	ov, _ := g.View("main")
 
 	// Parse if it is an internal command or to be sent to the mud
 	if len(line) > 0 && string(line[0]) == "/" {
@@ -133,7 +130,7 @@ func inputLine(g *gocui.Gui, v *gocui.View) error {
 			fmt.Fprintln(ov, "INPUT BUFFER:")
 			fmt.Fprintln(ov, cmdBuffer)
 		case "/clearInputBuffer":
-			v.Clear()
+			cmdBuffer = nil
 		}
 	} else {
 		// print to output and send it to the mud
@@ -144,12 +141,15 @@ func inputLine(g *gocui.Gui, v *gocui.View) error {
 	return nil
 }
 
-func scrollHistory(v *gocui.View, dy int) error {
+func scrollHistory(g *gocui.Gui, v *gocui.View, dy int) error {
 	if v != nil { // Origin is broken for this as it won't go into negatives
 		v.Clear()
-		if i := cmdIdx + dy; i >= 0 && i < len(cmdBuffer) {
+		ov, _ := g.View("main")
+		i := cmdIdx + dy
+		if i >= 0 && i < len(cmdBuffer) {
 			cmdIdx = i
-			fmt.Fprintln(v, cmdBuffer[cmdIdx])
+			fmt.Fprintf(v, "lineup/down: %v", cmdBuffer[cmdIdx])
+			fmt.Fprintln(ov, v.Buffer())
 		}
 	}
 	return nil
