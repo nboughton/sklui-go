@@ -40,6 +40,9 @@ func layout(g *gocui.Gui) error {
 		if err != gocui.ErrUnknownView {
 			return err
 		}
+		v.Wrap = true
+		v.Autoscroll = true
+		v.Frame = true
 		fmt.Fprintln(v, "our text output appears here")
 	}
 
@@ -48,7 +51,6 @@ func layout(g *gocui.Gui) error {
 		if err != gocui.ErrUnknownView {
 			return err
 		}
-		v.Highlight = false
 		v.Editable = true
 		v.Wrap = true
 
@@ -72,6 +74,19 @@ func keybindings(g *gocui.Gui) error {
 }
 
 func submitLine(g *gocui.Gui, v *gocui.View) error {
+	_, cy := v.Cursor()
+	line, err := v.Line(cy - 1)
+	if err != nil {
+		line = ""
+	}
+
+	ov, err := g.View("main")
+	if err != nil {
+		log.Panicln(err)
+	}
+
+	fmt.Fprintln(ov, "input:", line)
+
 	return nil
 }
 
