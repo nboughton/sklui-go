@@ -8,8 +8,10 @@ import (
 	"github.com/jroimartin/gocui"
 )
 
-var cmdBuffer = []string{}
-var cmdIdx = 0
+var (
+	cmdBuffer = []string{}
+	cmdIdx    = 0
+)
 
 func main() {
 	// Initialise gui
@@ -146,9 +148,7 @@ func scrollHistory(g *gocui.Gui, v *gocui.View, dy int) error {
 		v.Clear()
 		if i := cmdIdx + dy; i >= 0 && i < len(cmdBuffer) {
 			cmdIdx = i
-			vx, vy := v.Cursor()
-			fmt.Fprintf(v, "%v: %v, %v", cmdBuffer[cmdIdx], vx, vy)
-			//fmt.Fprintf(v, "%v", cmdBuffer[cmdIdx])
+			fmt.Fprintf(v, "%v: %v, %v", cmdBuffer[cmdIdx])
 		}
 	}
 	return nil
