@@ -8,6 +8,8 @@ import (
 	"github.com/jroimartin/gocui"
 )
 
+var inputBufferLine = -1
+
 func main() {
 	// Initialise gui
 	g := gocui.NewGui()
@@ -24,8 +26,6 @@ func main() {
 		log.Panicln(err)
 	}
 
-	g.SelBgColor = gocui.ColorGreen
-	g.SelFgColor = gocui.ColorBlack
 	g.Cursor = true
 
 	// Call MainLoop to instantiate ui
@@ -57,7 +57,7 @@ func layout(g *gocui.Gui) error {
 		}
 
 		// View settings
-		v.Autoscroll = true
+		//v.Autoscroll = true
 		v.Editable = true
 		v.Wrap = true
 
@@ -76,7 +76,7 @@ func keybindings(g *gocui.Gui) error {
 		return err
 	}
 	// Submit a line
-	if err := g.SetKeybinding("input", gocui.KeyEnter, gocui.ModNone, submitLine); err != nil {
+	if err := g.SetKeybinding("input", gocui.KeyEnter, gocui.ModNone, inputLine); err != nil {
 		return err
 	}
 	// Mouse cursor up needs to select the correct line from input
@@ -98,9 +98,8 @@ func keybindings(g *gocui.Gui) error {
 	return nil
 }
 
-func submitLine(g *gocui.Gui, v *gocui.View) error {
-	_, cy := v.Cursor()
-	line, err := v.Line(cy - 1)
+func inputLine(g *gocui.Gui, v *gocui.View) error {
+	line, err := v.Line(-1)
 	if err != nil {
 		line = ""
 	}
@@ -131,8 +130,8 @@ func submitLine(g *gocui.Gui, v *gocui.View) error {
 			v.Clear()
 		}
 	} else {
-		fmt.Fprintln(ov, "input:", line)
-		// send it to the mud
+		// print to output and send it to the mud
+		fmt.Fprintln(ov, "input:", line, inputBufferLine)
 	}
 
 	return nil
@@ -140,8 +139,12 @@ func submitLine(g *gocui.Gui, v *gocui.View) error {
 
 func scroll(v *gocui.View, dy int) error {
 	if v != nil {
-		ox, oy := v.Cursor()
-		v.MoveCursor(ox, oy+dy, true)
+		v.MoveCursor(0, dy, false)
+		/*
+			if i := inputBufferLine + dy; i <= 0 && len(strings.Split(v.Buffer(), "\n"))-i > 0 {
+				inputBufferLine = i
+			}
+		*/
 	}
 	return nil
 }
