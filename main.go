@@ -82,7 +82,7 @@ func keybindings(g *gocui.Gui) error {
 	// Mouse cursor up needs to select the correct line from input
 	if err := g.SetKeybinding("input", gocui.KeyArrowUp, gocui.ModNone,
 		func(g *gocui.Gui, v *gocui.View) error {
-			scroll(v, -1)
+			scrollHistory(v, -1)
 			return nil
 		}); err != nil {
 		return err
@@ -90,7 +90,7 @@ func keybindings(g *gocui.Gui) error {
 	// Mouse cursor down needs to select the correct line from input
 	if err := g.SetKeybinding("input", gocui.KeyArrowDown, gocui.ModNone,
 		func(g *gocui.Gui, v *gocui.View) error {
-			scroll(v, 1)
+			scrollHistory(v, 1)
 			return nil
 		}); err != nil {
 		return err
@@ -137,14 +137,10 @@ func inputLine(g *gocui.Gui, v *gocui.View) error {
 	return nil
 }
 
-func scroll(v *gocui.View, dy int) error {
-	if v != nil {
-		v.MoveCursor(0, dy, false)
-		/*
-			if i := inputBufferLine + dy; i <= 0 && len(strings.Split(v.Buffer(), "\n"))-i > 0 {
-				inputBufferLine = i
-			}
-		*/
+func scrollHistory(v *gocui.View, dy int) error {
+	if v != nil { // Origin is broken for this as it won't go into negatives
+		ox, oy := v.Origin()
+		v.SetOrigin(ox, oy+dy)
 	}
 	return nil
 }
