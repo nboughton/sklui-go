@@ -1,0 +1,21 @@
+{
+	"ImportPath": "github.com/nboughton/disc-go",
+	"GoVersion": "go1.6",
+	"GodepVersion": "v60",
+	"Deps": [
+		{
+			"ImportPath": "github.com/jroimartin/gocui",
+			"Comment": "v0.2.0-6-ga8eba6d",
+			"Rev": "a8eba6db38c8459e1bbccfe38359b0405084a4f2"
+		},
+		{
+			"ImportPath": "github.com/mattn/go-runewidth",
+			"Comment": "v0.0.1",
+			"Rev": "d6bea18f789704b5f83375793155289da36a3c7f"
+		},
+		{
+			"ImportPath": "github.com/nsf/termbox-go",
+			"Rev": "362329b0aa6447eadd52edd8d660ec1dff470295"
+		}
+	]
+}
