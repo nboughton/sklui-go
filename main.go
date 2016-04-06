@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"log"
+	"strings"
 
 	"github.com/jroimartin/gocui"
 )
@@ -40,10 +41,13 @@ func layout(g *gocui.Gui) error {
 		if err != gocui.ErrUnknownView {
 			return err
 		}
-		v.Wrap = true
+
+		// View settings
 		v.Autoscroll = true
-		v.Frame = true
-		fmt.Fprintln(v, "our text output appears here")
+		v.Wrap = true
+
+		// Opening message
+		fmt.Fprintln(v, "Welcome to disc-go!")
 	}
 
 	// define text entry screen
@@ -51,9 +55,13 @@ func layout(g *gocui.Gui) error {
 		if err != gocui.ErrUnknownView {
 			return err
 		}
+
+		// View settings
+		v.Autoscroll = true
 		v.Editable = true
 		v.Wrap = true
 
+		// Set focus on input
 		if err := g.SetCurrentView("input"); err != nil {
 			return err
 		}
@@ -67,7 +75,24 @@ func keybindings(g *gocui.Gui) error {
 	if err := g.SetKeybinding("input", gocui.KeyCtrlQ, gocui.ModNone, quit); err != nil {
 		return err
 	}
+	// Submit a line
 	if err := g.SetKeybinding("input", gocui.KeyEnter, gocui.ModNone, submitLine); err != nil {
+		return err
+	}
+	// Mouse cursor up needs to select the correct line from input
+	if err := g.SetKeybinding("input", gocui.KeyArrowUp, gocui.ModNone,
+		func(g *gocui.Gui, v *gocui.View) error {
+			scroll(v, -1)
+			return nil
+		}); err != nil {
+		return err
+	}
+	// Mouse cursor down needs to select the correct line from input
+	if err := g.SetKeybinding("input", gocui.KeyArrowDown, gocui.ModNone,
+		func(g *gocui.Gui, v *gocui.View) error {
+			scroll(v, 1)
+			return nil
+		}); err != nil {
 		return err
 	}
 	return nil
@@ -85,8 +110,39 @@ func submitLine(g *gocui.Gui, v *gocui.View) error {
 		log.Panicln(err)
 	}
 
-	fmt.Fprintln(ov, "input:", line)
+	// Parse if it is an internal command or to be sent to the mud
+	if len(line) > 0 && string(line[0]) == "/" {
+		// parse internal command
+		s, args := strings.Split(line, " "), []string{}
+		cmd := s[0]
+		if len(s) > 1 {
+			args = append(args, s[1:]...)
+		} else {
+			args = append(args, "")
+		}
 
+		switch cmd {
+		case "/clear":
+			ov.Clear()
+		case "/printInputBuffer":
+			fmt.Fprintln(ov, "INPUT BUFFER:")
+			fmt.Fprintln(ov, v.Buffer())
+		case "/clearInputBuffer":
+			v.Clear()
+		}
+	} else {
+		fmt.Fprintln(ov, "input:", line)
+		// send it to the mud
+	}
+
+	return nil
+}
+
+func scroll(v *gocui.View, dy int) error {
+	if v != nil {
+		ox, oy := v.Cursor()
+		v.MoveCursor(ox, oy+dy, true)
+	}
 	return nil
 }
 
