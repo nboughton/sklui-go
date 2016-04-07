@@ -50,7 +50,7 @@ func layout(g *gocui.Gui) error {
 		v.Wrap = true
 
 		// Opening message
-		fmt.Fprintln(v, "Welcome to disc-go!")
+		fmt.Fprintln(v, "Welcome!")
 	}
 
 	// define text entry screen
@@ -60,7 +60,6 @@ func layout(g *gocui.Gui) error {
 		}
 
 		// View settings
-		//v.Autoscroll = true
 		v.Editable = true
 		v.Wrap = true
 
@@ -78,22 +77,23 @@ func keybindings(g *gocui.Gui) error {
 	if err := g.SetKeybinding("input", gocui.KeyCtrlQ, gocui.ModNone, quit); err != nil {
 		return err
 	}
+
 	// Submit a line
 	if err := g.SetKeybinding("input", gocui.KeyEnter, gocui.ModNone, inputLine); err != nil {
 		return err
 	}
-	// Mouse cursor up needs to select the correct line from input
+
+	// Arrow up/down scrolls cmd history
 	if err := g.SetKeybinding("input", gocui.KeyArrowUp, gocui.ModNone,
 		func(g *gocui.Gui, v *gocui.View) error {
-			scrollHistory(g, v, -1)
+			scrollHistory(v, -1)
 			return nil
 		}); err != nil {
 		return err
 	}
-	// Mouse cursor down needs to select the correct line from input
 	if err := g.SetKeybinding("input", gocui.KeyArrowDown, gocui.ModNone,
 		func(g *gocui.Gui, v *gocui.View) error {
-			scrollHistory(g, v, 1)
+			scrollHistory(v, 1)
 			return nil
 		}); err != nil {
 		return err
@@ -106,11 +106,15 @@ func inputLine(g *gocui.Gui, v *gocui.View) error {
 	if line != "" {
 		cmdBuffer = append(cmdBuffer, line)
 		cmdIdx = len(cmdBuffer)
+	} else {
+		// it's an empty line, return nil and be done with it
+		return nil
 	}
 
+	// Get a main view obvject to print output to
 	ov, _ := g.View("main")
 
-	// Parse if it is an internal command or to be sent to the mud
+	// Parse if it is an internal command or otherwise
 	if len(line) > 0 && string(line[0]) == "/" {
 		// parse internal command
 		s, args := strings.Split(line, " "), []string{}
@@ -122,6 +126,8 @@ func inputLine(g *gocui.Gui, v *gocui.View) error {
 		}
 
 		switch cmd {
+		case "/quit":
+			return gocui.ErrQuit
 		case "/clear":
 			ov.Clear()
 		case "/printInputBuffer":
@@ -131,15 +137,16 @@ func inputLine(g *gocui.Gui, v *gocui.View) error {
 			cmdBuffer = nil
 		}
 	} else {
-		// print to output and send it to the mud
+		// print to output and do whatever with it
 		fmt.Fprintln(ov, "cmd:", line)
 	}
 
+	// Clear the input buffer now that the line has been dealt with
 	v.Clear()
 	return nil
 }
 
-func scrollHistory(g *gocui.Gui, v *gocui.View, dy int) error {
+func scrollHistory(v *gocui.View, dy int) {
 	if v != nil {
 		v.Clear()
 		if i := cmdIdx + dy; i >= 0 && i < len(cmdBuffer) {
@@ -148,7 +155,6 @@ func scrollHistory(g *gocui.Gui, v *gocui.View, dy int) error {
 			v.SetOrigin(0, 0)
 		}
 	}
-	return nil
 }
 
 func quit(g *gocui.Gui, v *gocui.View) error {
