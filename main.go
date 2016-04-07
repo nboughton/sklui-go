@@ -102,11 +102,7 @@ func keybindings(g *gocui.Gui) error {
 }
 
 func inputLine(g *gocui.Gui, v *gocui.View) error {
-	line, err := v.Line(-1)
-	if err != nil {
-		line = ""
-	}
-
+	line := strings.TrimSpace(v.Buffer())
 	if line != "" {
 		cmdBuffer = append(cmdBuffer, line)
 		cmdIdx = len(cmdBuffer)
