@@ -148,9 +148,9 @@ func inputLine(g *gocui.Gui, v *gocui.View) error {
 
 func scrollHistory(v *gocui.View, dy int) {
 	if v != nil {
-		v.Clear()
 		if i := cmdIdx + dy; i >= 0 && i < len(cmdBuffer) {
 			cmdIdx = i
+			v.Clear()
 			fmt.Fprintf(v, "%v", cmdBuffer[cmdIdx])
 			v.SetOrigin(0, 0)
 		}
