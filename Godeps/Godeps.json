@@ -1,5 +1,5 @@
 {
-	"ImportPath": "github.com/nboughton/disc-go",
+	"ImportPath": "github.com/nboughton/sklui-go",
 	"GoVersion": "go1.6",
 	"GodepVersion": "v60",
 	"Deps": [
